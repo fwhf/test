@@ -1,0 +1,376 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>ts入门</title>
+	<style type="text/css">
+		*{margin:0;padding:0;}
+		body{width:100%;background:repeat-y center top;background-size:contain;background-color:rgb(244,244,244);}
+		a{color:#000;text-decoration:none;}
+		li{list-style:none;}
+		
+		.header{width:80%;text-align:left;margin:0 auto;padding:40px 0 20px;}
+		.header h1{}
+		.header h1 b{font-weight:normal;font-size:16px;margin-left:10px;}
+
+		.nav{overflow:hidden;background:rgba(255,255,255,0.4);margin-bottom:20px;}
+		.nav ul{width:80%;margin:0 auto;}
+		.nav ul li{float:left;padding:10px 20px;}
+		.nav ul li:hover{background:rgba(255,255,255);cursor:pointer;}
+		.nav .active{background:rgba(255,255,255)}
+
+		.content{overflow:hidden;width:80%;margin:0 auto 20px;min-height:1400px;background:#FAF9DE;padding:20px;box-sizing:border-box;}
+		.content h2{overfloe:hidden;}
+		.content h2 i{font-style:normal;float:right;font-size:12px;font-weight:normal;padding-top:10px;}
+		.content .main{font-size:14px;padding:10px 0;}
+		.content div{padding-top:20px;font-size:14px;}
+		.content p{padding:10px 0;font-size:14px;}
+		.content img{width:200px;}
+		.content main{background:rgba(255,255,255,0.4)}
+		.content main br{margin:5px 0;}
+		.content xmp{font-size:14px;white-space: pre-wrap;word-wrap: break-word;}
+
+		.footer{padding:20px 0;border-top:1px solid #333;text-align:center;font-size:12px;}
+		.footer p{line-height:20px;height:20px;}
+		.footer a{display:inline-block;vertical-align:middle;}
+		.footer a img{width:14px;display:block;}
+	</style>
+</head>
+<body>
+<div class="content">
+<p>前言</p>
+<main><xmp>
+	很高兴今天还有时间继续学习探讨webpack4.x，本文将接着上一篇的内容继续对webpack4.x深入研究，希望依旧可以和上一篇一样紧跟着敲一遍。
+</xmp></main>
+<!--<img src="img/webpack-demo-img1.png" alt="" style="width:auto;padding:20px;"/>-->
+<p>1.环境分离</p>
+<main><xmp>
+	开发环境(development)和生产环境(production)的构建目标差异很大。在开发环境中，我们需要具有强大的、具有实时重新加载(live reloading)或热模块替换(hot module replacement)能力的 source map 和 localhost server。而在生产环境中，我们的目标则转向于关注更小的 bundle，更轻量的 source map，以及更优化的资源，以改善加载时间。由于要遵循逻辑分离，我们通常为每个环境编写彼此独立的 webpack 配置。
+	虽然要分离开发环境与生产环境，但其中必然有通用的配置。为了将这些配置合并在一起，我们将使用一个名为 webpack-merge 的工具
+	(1)安装【npm install webpack-merge --save-dev】
+	(2)我们在根目录下新建三个文件，分别为webpack.common.js、webpack.dev.js、webpack.prod.js，分别代表公共配置文件、开发环境配置文件、生产环境（指项目上线时的环境）配置文件。
+	(3)将webpack.config.js的代码拆分到上述新建的三个文件中，然后把webpack.config.js文件删除，具体如下：
+</xmp></main>
+<img src="img/webpack-demo-img36.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<img src="img/webpack-demo-img37.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<img src="img/webpack-demo-img38.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	(4)设置package.json的scripts命令：
+	--config是指打包配置指向webpack.xxx.js配置文件,默认不配置是指向webpack.config.js。
+</xmp></main>
+<img src="img/webpack-demo-img39.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	(5)运行【npm run build】和【npm run dev】，效果应该和我们分离代码前是一样的。
+</xmp></main>
+<p>2.使用mode</p>
+<main><xmp>
+	(1)development 会将 process.env.NODE_ENV 的值设为 development。启用 NamedChunksPlugin 和 NamedModulesPlugin。
+		NamedChunksPlugin:根据文件名称生成稳定chunkid；
+		NamedModulesPlugin:热更新时使用的插件，显示模块的相对路径；
+	(2)production 会将 process.env.NODE_ENV 的值设为 production。启用 FlagDependencyUsagePlugin, FlagIncludedChunksPlugin, ModuleConcatenationPlugin, NoEmitOnErrorsPlugin, OccurrenceOrderPlugin, SideEffectsFlagPlugin 和 UglifyJsPlugin.
+		FlagDependencyUsagePlugin:删除无用代码的，其他插件依赖；
+		FlagIncludedChunksPlugin:删除无用代码的，其他插件依赖；
+		ModuleConcatenationPlugin:在webpack打包时，将bundle 内各个模块预编译到一个闭包中，提升代码在浏览器中的执行速度（相比之前的打包方式---每个模块都是一个闭包）；
+		NoEmitOnErrorsPlugin:在编译出现错误时，跳过输出阶段。这样可以确保输出资源不会包含错误；
+		OccurrenceOrderPlugin:比对id的使用频率和分布来得出最短的id分配给使用频率高的模块；
+		SideEffectsFlagPlugin:Tree shaking；
+		UglifyJsPlugin:js代码压缩；
+</xmp></main>
+<img src="img/webpack-demo-img40.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<img src="img/webpack-demo-img41.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	(3)此时也可以根据mode不同，在js代码中写不同的逻辑
+	if (process.env.NODE_ENV === 'development') {
+		//...
+	}
+	if (process.env.NODE_ENV === 'production') {
+	    //...
+	}
+	(4)运行【npm run build】你会发现直接打包一直报的警告也消失了。
+</xmp></main>
+<img src="img/webpack-demo-img42.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<p>3.代码分离</p>
+<main><xmp>
+	(1)准备：在src中加入jq，并分别在idnex.js以及btn.js中引入
+</xmp></main>
+<img src="img/webpack-demo-img43.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<img src="img/webpack-demo-img44.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	(2)运行【npm run build】查看dist文件夹下文件内容及大小
+</xmp></main>
+<img src="img/webpack-demo-img45.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	3.1使用optimization.splitChunks分离
+		3.1-(1)在webpack.common.js中添加配置optimization.splitChunks
+</xmp></main>
+<img src="img/webpack-demo-img46.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		3.1-(2)运行【npm run build】查看dist文件夹下文件内容及大小
+</xmp></main>
+<img src="img/webpack-demo-img47.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	3.2使用动态导入分离
+		3.2-(1)修改idnex.js以及btn.js中引入jq的方式
+</xmp></main>
+<img src="img/webpack-demo-img48.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<img src="img/webpack-demo-img49.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		3.2-(2)在webpack.common.js中添加配置output.chunkFilename
+</xmp></main>
+<img src="img/webpack-demo-img50.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		3.2-(3)运行【npm run build】查看dist文件夹下文件内容及大小
+</xmp></main>
+<img src="img/webpack-demo-img51.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<p>4.懒加载</p>
+<main><xmp>
+	目前每次加载页面的时候都会直接加载jq，但是初次加载页面时我们并不需要它,这无疑是降低了页面的加载速度。
+	我们可以调整为在点击按钮的时候再加载jq。
+	(1)删除index.js中引入的jq,修改btn.js中引入jq的时机
+</xmp></main>
+<img src="img/webpack-demo-img52.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	(2)为确保jq只在第一次点击时引入，可在jq代码中加入一句打印，稍后在控制台查看打印时机及次数即可。
+</xmp></main>
+<img src="img/webpack-demo-img53.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	(3)运行【npm run build】,打开index.html查看【console.log(111) console.log('被点击了123')】打印时机
+</xmp></main>
+<img src="img/webpack-demo-img54.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<p>5.缓存</p>
+<main><xmp>
+	只要 /dist 目录中的内容部署到服务器上，客户端（通常是浏览器）就能够访问网站此服务器的网站及其资源。而最后一步获取资源是比较耗费时间的，这就是为什么浏览器使用一种名为 缓存 的技术。可以通过命中缓存，以降低网络流量，使网站加载速度更快，然而，如果我们在部署新版本时不更改资源的文件名，浏览器可能会认为它没有被更新，就会使用它的缓存版本。由于缓存的存在，当你需要获取新的代码时，就会显得很棘手。
+	5.1出口文件文件名
+		5.1-(1)配置出口文件的文件名
+</xmp></main>
+<img src="img/webpack-demo-img55.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		5.1-(2)运行【npm run build】，如你是和我一步步走下来的，那么你会遇到如下报错
+</xmp></main>
+<img src="img/webpack-demo-img56.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		5.1-(3)上图报错是由于热更新与chunkhash冲突引起的，将热更新插件与chunkhash分开即可
+</xmp></main>
+<img src="img/webpack-demo-img57.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<img src="img/webpack-demo-img58.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<img src="img/webpack-demo-img59.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		5.1-(4)运行【npm run build】，记录下dist文件夹下文件名字，再运行【npm run build】，记录下dist文件夹下文件名字。对比两次文件名字没有任何区别。
+		5.1-(5)运行【npm run build】，记录下dist文件夹下文件名字，修改一点内容后再运行【npm run build】，记录下dist文件夹下文件名字。对比两次文件名字你会发现文件名字也更换。
+			当文件名字更换后，浏览器会识别去获取已更改的文件，而不是从缓存中获取。
+	5.2提取类库
+		之前内容中代码分离也可以达到缓存的目的，分离出的jq文件名是不变的。
+	5.3模块标识符
+		5.3-(1)新增test.js
+</xmp></main>
+<img src="img/webpack-demo-img60.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		5.3-(2)新增入口，并配置optimization.cacheGroups
+</xmp></main>
+<img src="img/webpack-demo-img61.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		5.3-(3)运行【npm run build】，记录下dist文件夹下index_dist文件名字，注释掉test入口再运行【npm run build】，记录下dist文件夹下index_dist文件名字，对比两次文件名字没有任何变化。
+		5.3-(4)解开test入口的注释，再运行【npm run build】，记录下dist文件夹下index_dist文件名字，对比三次文件名字没有任何变化。
+		此时证明了新增不相关文件，或者删除不相关文件不会影响不相关文件的文件名。
+</xmp></main>
+<p>6.构建性能</p>
+<main><xmp>
+	(1)loader
+		将 loaders 应用于最少数的必要模块中。而不是:
+			{
+				test: /\.js$/,
+				loader: "babel-loader"
+			}
+		使用 include 字段仅将 loader 模块应用在实际需要用其转换的位置中：
+			{
+				test: /\.js$/,
+				include: path.resolve(__dirname, "src"),
+				loader: "babel-loader"
+			}
+	(2)每个额外的 loader/plugin 都有启动时间。尽量少使用不同的工具。
+	(3)Devtool
+		不同的 devtool 的设置，会导致不同的性能差异。
+</xmp></main>
+</div>
+<!--<p>前言</p>
+<main><xmp>
+	本文将会对webpack4.x基础常用配置一一解释，各步骤都有详解截图及注释，建议跟着本文手动搭建一次，相信你会因此对webpack有一定的认识（大佬建议自动略过本文）。
+</xmp></main>
+<p>1.安装</p>
+<main><xmp>
+	(1)创建package.json文件
+		首先新建一个空文件夹，用于创建项目，在终端中进入文件夹，如下我在桌面建了一个名为webpack-demo的文件夹,使用终端进入文件夹后,使用【npm init 或者 npm init -y】命令创建一个package.json文件。
+</xmp></main>
+<img src="img/webpack-demo-img1.png" alt="" style="width:auto;padding:20px;"/>
+<main><xmp>
+	(2)安装webpack
+		本地安装(本文采用)
+			npm install webpack webpack-cli --save-dev
+		全局安装
+			npm install webpack --global
+</xmp></main>
+<img src="img/webpack-demo-img2.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<p>2.起步</p>
+<main><xmp>
+	(1)现在我们将创建以下目录结构、文件和内容：
+	在idnex.html中我们引入了dist/main.js文件，main.js文件是打包后的文件，暂时先不用管
+</xmp></main>
+<img src="img/webpack-demo-img3.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<img src="img/webpack-demo-img4.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	(2)我们还需要调整 package.json 文件，以便确保我们安装包是私有的(private)，并且移除 main 入口。这可以防止意外发布你的代码。
+</xmp></main>
+<img src="img/webpack-demo-img5.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	(3)进入终端运行命令【webpack】，你会发现目录中多出了dist文件夹，此时即可手动运行index.html，看到Hello webpack
+</xmp></main>
+<img src="img/webpack-demo-img6.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<p>3.通过配置文件来使用webpack</p>
+<main><xmp>
+	(1)在当前目录下新建webpack.config.js：
+</xmp></main>
+<img src="img/webpack-demo-img7.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	(2)删除之前起步中生成的dist文件夹，进入终端运行命令【webpack】，你会发现目录中多出了dist文件夹，并且文件夹下的文件名字为webpack.config.js中出口名字index-dist.js，此时index.html中手动引入index-dist.js即看到Hello webpack
+</xmp></main>
+<img src="img/webpack-demo-img8.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	(3)我们现在只在终端中使用【webpack】命令来进行打包，要是以后在打包的同时还有更多的操作呢，那不是还得写上更多的命令？所以我们得想办法把这些命令都集成起来，这时候之前的package.json文件就派上用场了：
+	将package.json中第七行（当前版本）替换成【"build": "webpack"】
+</xmp></main>
+<img src="img/webpack-demo-img9.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	(4)删除之前第二步中生成的dist文件夹，进入终端运行命令【npm run build】，你会发现目录中多出了dist文件夹,和之前第二步结果一致。
+</xmp></main>
+<img src="img/webpack-demo-img10.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<p>4.loader</p>
+<main><xmp>
+	(1)loader是webpack最强大的功能之一，通过不同的loader，webpack有能力调用外部的脚本或工具，实现对不同格式的文件的处理。
+	(2)loader需要单独安装并且需要在webpack.config.js中的modules配置项下进行配置。
+	文本只介绍css-loader、file-loader
+	4.1配置css-loader
+		4.1-(1)下载【npm install style-loader css-loader --save-dev】
+		4.1-(2)在webpack.config.js中module配置
+</xmp></main>
+<img src="img/webpack-demo-img11.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		4.1-(3)在src下新建index.css
+</xmp></main>
+<img src="img/webpack-demo-img12.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		4.1-(4)在index.js引入index.css
+</xmp></main>
+<img src="img/webpack-demo-img13.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		4.1-(5)删除之前生成的dist文件夹，进入终端运行命令【npm run build】，运行index.html会发现css已载入。
+</xmp></main>
+<img src="img/webpack-demo-img14.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	4.2配置file-loader
+		4.2-(1)下载【npm install file-loader --save-dev】
+		4.2-(2)在webpack.config.js中module配置
+</xmp></main>
+<img src="img/webpack-demo-img15.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		4.2-(3)在src放入一张图片
+		4.2-(4)在index.js引入该图片
+</xmp></main>
+<img src="img/webpack-demo-img16.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		4.2-(5)删除之前生成的dist文件夹，进入终端运行命令【npm run build】，运行index.html，你会发现图片未加载出来，看错误信息发现是路径错误。
+</xmp></main>
+<img src="img/webpack-demo-img17.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		4.2-(5)修改file-loader中options的publicPath,重新进入终端运行命令【npm run build】即正确。
+</xmp></main>
+<img src="img/webpack-demo-img18.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<img src="img/webpack-demo-img19.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<p>5.plugin</p>
+<main><xmp>
+	插件（Plugins）是用来拓展Webpack功能的，它们会在整个构建过程中生效，执行相关的任务。
+	文节只介绍html-webpack-plugin、clean-webpack-plugin，热更新(HotModuleReplacementPlugin)在下面会配合本地服务一起介绍。
+	5.1配置html-webpack-plugin
+		之前我们的例子中一直都是一个entry，一个出口output，那假设我们现在有多个入口多个出口的话岂不是要在html中手动添加多个script,而且每一次入口与出口的改动都得手动改html是不是很麻烦？而html-webpack-plugin就可以解决此问题，自动生成html。
+		5.1-(1)因为谈到了多个入口多个出口，所以此处放一张多入口多出口的图片配置方式，不做详解，除了与单出口入口的配置不一致外，其他一模一样。
+</xmp></main>
+<img src="img/webpack-demo-img20.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		5.1-(2)下载【npm install html-webpack-plugin --save-dev】
+		5.1-(3)在webpack.config.js中引入并在plugins配置
+</xmp></main>
+<img src="img/webpack-demo-img21.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		5.1-(4)删除之前生成的dist文件夹，进入终端运行命令【npm run build】，会发现在dist文件夹下多出了index.html。
+</xmp></main>
+<img src="img/webpack-demo-img22.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		5.1-(5)运行dist下的index.html你会发现图片路径又错了，那是因为此html和之前的html不在同一目录，所以再修改一下图片的引用路径重新打包即可。
+</xmp></main>
+<img src="img/webpack-demo-img23.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	5.2配置clean-webpack-plugin
+		你可能已经注意到每次打包的时候都会删除一次dist文件夹，这是为了防止每次打包之后有上次遗留文件混淆代码，既然如此自然有其对应的插件clean-webpack-plugin，可用来清理文件夹。
+		5.2-(1)下载【npm install clean-webpack-plugin --save-dev】
+		5.2-(2)在webpack.config.js中引入并在plugins配置
+</xmp></main>
+<img src="img/webpack-demo-img24.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		5.2-(3)我们实验一下，首先再引入一张其他图片（test.png）,并在index.js中引入使用，打包一次，会发现dist/images下有两张图片。
+</xmp></main>
+<img src="img/webpack-demo-img25.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+		5.2-(4)而后我们删除这张图片，在index.js中删除，再打包一次，此时会发现dist/images下只有一张图片，说明此次打包并没有上次打包遗留内容。
+</xmp></main>
+<img src="img/webpack-demo-img26.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<p>6.本地服务</p>
+<main><xmp>
+	(1)下载【npm install webpack-dev-server --save-dev】
+	(2)在webpack.config.js中配置devServer
+</xmp></main>
+<img src="img/webpack-demo-img27.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	(3)我们继续在package.json文件中添加启动命令。webpack-dev-server就是启动服务器的命令，--open是用于启动完服务器后自动打开浏览器，这时候我们自定义命令方式的便捷性就体现出来了，可以多个命令集成在一起运行，即我们定义了一个dev命令名称就可以同时运行了webpack-dev-server和--open两个命令
+</xmp></main>
+<img src="img/webpack-demo-img28.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	(4)终端运行命令【npm run dev】，会自动打开默认浏览器localhost:8088页面。
+	(5)此时修改index.js中的内容或者css页面会自动刷新。
+</xmp></main>
+<p>7.热更新HotModuleReplacementPlugin</p>
+<main><xmp>
+	模块热替换(Hot Module Replacement 或 HMR)是 webpack 提供的最有用的功能之一。它允许在运行时更新各种模块，而无需进行完全刷新。
+	(1)更新 webpack-dev-server 的配置，和使用 webpack 内置的 HMR 插件
+</xmp></main>
+<img src="img/webpack-demo-img29.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	(2)新建btn.js并在index.js中引入，在index.js添加热更新配置
+</xmp></main>
+<img src="img/webpack-demo-img30.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<img src="img/webpack-demo-img31.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	(3)修改btn.js内容(例如修改console的内容)，此时页面不会全部刷新但就是代码已经修改
+</xmp></main>
+<p>8.source map</p>
+<main><xmp>
+	作为开发，代码调试当然少不了，那么问题来了，经过打包后的文件，你是不容易找到出错的地方的，Source Map就是用来解决这个问题的。
+	通过配置devtool，我们会在打包时生成对应于打包文件的.map文件，使得编译后的代码可读性更高，更易于调试。
+	
+	测试方法:在btn.js中主动抛出错误
+</xmp></main>
+<img src="img/webpack-demo-img32.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<main><xmp>
+	(1)未配置前通过命令【npm run build】打包后，执行打包后的index.html按钮，报错index-dist.js:1 error!
+</xmp></main>
+<img src="img/webpack-demo-img33.png" alt="" style="width:90%;padding:20px 10px 0;"/>
+<main><xmp>
+	(1)配置devtool后通过命令【npm run build】打包后，执行打包后的index.html按钮，报错btn.js:3 error!
+</xmp></main>
+<img src="img/webpack-demo-img34.png" alt="" style="width:auto;padding:20px 10px 0;"/>
+<img src="img/webpack-demo-img35.png" alt="" style="width:90%;padding:20px 10px 0;"/>
+<p>总结</p>
+<main><xmp>
+	呼~，终于基本写完了，本文篇幅较长，但是如果你可以一步步跟着敲下来，相信你自有所收获。webpack的功能还有很多，或许之后有时间的话还会有第二篇来介绍。
+															致敬
+																--明日的前端
+</xmp></main>-->
+</body>
+</html>

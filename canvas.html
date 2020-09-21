@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		html,body{
+			margin:0;
+			padding:0;
+		}
+		body{
+			background: #f6f6f6;
+		}
+		canvas{
+			display: block;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="canvas"></canvas>
+</body>
+<script type="text/javascript">
+	var canvas = document.getElementById('canvas');
+	canvas.width = document.documentElement.clientWidth;
+	canvas.height = document.documentElement.clientHeight;
+
+	var context = canvas.getContext('2d');
+	console.log(context)
+
+	function initXX(a,b){
+		return [rand(3,canvas.width-3),rand(a,b),rand(1,2),rand(1,10),rand(-2,2)]
+	}
+	function xx(x,y,r,light){
+		//x,y,r,起始亮度,闪烁速度
+		context.beginPath();
+		context.fillStyle='rgba(255,255,255,' + light/10 + ')';
+		context.arc(x,y,r,0,2*Math.PI);
+		context.fill();
+		context.closePath();
+	}
+	function rand(n,m){
+		var c = m - n + 1;
+		return Math.floor(Math.random() * c + n);
+	}
+
+	var xxArr = [];
+	for(var i = 0 ; i < 100 ; i++){
+		if(rand(0,10) == 1){
+			xxArr.push(initXX(canvas.height/3*2,canvas.height));
+		}else if(rand(0,10) >=2 && rand(0,10) <=5){
+			xxArr.push(initXX(canvas.height/3*1,canvas.height/3*2));
+		}else{
+			xxArr.push(initXX(0,canvas.height/3));
+		}
+	}
+	
+	function initLX(){
+		var x = rand(0,canvas.width);
+		var y = 0;
+		var l = rand(40,60);
+		return [x + l, y - l , x , y , rand(2,4)]
+	}
+	function initLX2(){
+		var x = canvas.width;
+		var y = rand(0,canvas.height);
+		var l = rand(40,60);
+		return [x + l, y - l , x , y , rand(2,4)]
+	}
+	function lx(x1,y1,x2,y2){
+		context.beginPath();
+		var lxColor=context.createLinearGradient(x2,y2,x1,y1);
+		lxColor.addColorStop(0,"rgba(255,255,255,1)");
+		lxColor.addColorStop(1,"rgba(255,255,255,0)");
+
+		context.strokeStyle=lxColor;
+		context.fillStyle='rgba(255,255,255,1)';
+		context.lineWidth=1
+		context.lineJoin = "round";
+		context.lineTo(x1,y1)
+		context.lineTo(x2,y2)
+		context.arc(x2,y2,1.5,0,2*Math.PI);
+		context.stroke()
+		context.fill()
+		context.closePath();
+	}
+	var lxArr = [];
+	setInterval(()=>{
+		if(rand(1,3) == 1){
+			lxArr.push(initLX());
+		}
+		if(rand(1,5) == 1){
+			lxArr.push(initLX2());
+		}
+	},500);
+
+
+	ylx = 300;
+	yly = 200;
+	ylr = 100;
+	ylstarPI = 2/5;
+	ylendPI = 6/5;
+	ylx1 = ylx+ylr*Math.cos(Math.PI/180 * ylendPI*180);
+	yly1 = yly+ylr*Math.sin(Math.PI/180 * ylendPI*180);
+	ylx2 = ylx+ylr*Math.cos(Math.PI/180 * ylstarPI*180);
+	yly2 = yly+ylr*Math.sin(Math.PI/180 * ylstarPI*180);
+
+	setInterval(()=>{
+		context.clearRect(0,0,canvas.width,canvas.height);
+
+		// 创建渐变
+		var grd=context.createLinearGradient(0,0,0,canvas.height);
+		grd.addColorStop(0,"#330066");
+		grd.addColorStop(1,"#330099");
+		 
+		// 填充渐变
+		context.fillStyle=grd;
+		context.fillRect(0,0,canvas.width,canvas.height);
+
+		var yl=context.createLinearGradient(ylx-ylr,yly+ylr,ylx+ylr,yly-ylr);
+
+		yl.addColorStop(0.19,"rgba(255,255,255,1)");
+		yl.addColorStop(0.8,"rgba(255,255,255,0)");
+		
+		context.beginPath();
+		context.fillStyle=yl;
+		context.lineTo(ylx1,yly1);
+		context.quadraticCurveTo(ylx-ylr/4*3,yly+ylr/3*2,ylx2,yly2);
+		context.arc(ylx,yly,ylr,ylstarPI*Math.PI,ylendPI*Math.PI)
+		context.fill();
+		context.closePath();
+
+		for(var i = 0 ; i < xxArr.length; i++){
+			xx(xxArr[i][0],xxArr[i][1],xxArr[i][2],xxArr[i][3]);
+			if(xxArr[i][3] == 0 || xxArr[i][3] == 10){
+				xxArr[i][4] *= -1;
+			}
+			xxArr[i][3] += xxArr[i][4]/2;
+		}
+
+		for(var i = 0 ; i < lxArr.length; i++){
+			lx(lxArr[i][0],lxArr[i][1],lxArr[i][2],lxArr[i][3])
+			lxArr[i][0] -= lxArr[i][4];
+			lxArr[i][1] += lxArr[i][4];
+			lxArr[i][2] -= lxArr[i][4];
+			lxArr[i][3] += lxArr[i][4];
+			if(lxArr[i][0] <= 0 || lxArr[i][1] >= canvas.height){
+				lxArr.splice(i,1);
+				i--;
+			}
+		}
+	},20);
+</script>
+</html>

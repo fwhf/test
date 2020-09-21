@@ -1,0 +1,74 @@
+<head>
+    <title>1</title>
+    <script type="text/javascript" src="three.js"></script>
+    <style type="text/css">
+    	*{margin:0;padding:0;}
+    	canvas{display:block;}
+    </style>
+</head>
+<body>
+<div id="fwhf"></div>
+<script type="text/javascript">
+
+	init();
+	function init(){
+		//创建一个渲染器		即创建一个canvas		antialias: true圆滑效果
+		var renderer = new THREE.WebGLRenderer({antialias: true});
+		//渲染器宽高		即canvas宽高
+		renderer.setSize(window.innerWidth,window.innerHeight);
+		//渲染器颜色		即canvas的底色	参数： 颜色 (rgb也行),	透明度
+		renderer.setClearColor('#fff',.5);
+		//将渲染器添加到fwhf标签中	即将canvas添加至div中
+		document.getElementById("fwhf").append(renderer.domElement);
+
+        //创建一个场景
+        var scene=new THREE.Scene();
+
+        //生成一个坐标轴，辅助线，坐标轴的参数
+        var axes=new THREE.AxisHelper(30);
+        //将辅助线添加至场景中
+        scene.add(axes);
+
+        //创建光源	参数：颜色，密度，距离 0无穷
+        var light = new THREE.SpotLight(0xffffff,1,0);
+        //设置光源的位置
+        light.position.set(-40,60,-10);
+        //将光源添加至场景中
+        scene.add(light);
+
+        //创建一个几何体
+        var geometry = new THREE.Geometry();
+        //创建材质  线的材质   基础线条材料
+        var meterial = new THREE.LineBasicMaterial({vertexColors:THREE.VertexColors});
+        //定义两个颜色
+        var color1 = new THREE.Color(0x444444);
+        var color2 = new THREE.Color(0xff0000);
+        //在几何体中加入两点
+        geometry.vertices.push(new THREE.Vector3(-30,0,30));
+        geometry.vertices.push(new THREE.Vector3(30,0,-30))
+        //会在两点之间渐变
+        geometry.colors.push(color1,color2);
+
+        //第三个参数是一组点的连接方式    两点间的连线
+        var line = new THREE.Line(geometry,meterial,THREE.linePieces);
+        //将线添加至场景
+        scene.add(line);
+
+		//创建一个相机	PerspectiveCamera透视相机	参数：视角，纵横比，进平面的距离，远平面的距离
+		var camera=new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight,0.1,1000);
+		//设置相机的位置
+		camera.position.x=100;
+        camera.position.y=40;
+        camera.position.z=30;
+        //
+        camera.up.x=1;
+        camera.up.y=0;
+        camera.up.z=0;
+        //指定摄像机的焦点
+        camera.lookAt(scene.position);
+
+        renderer.render(scene,camera);
+	}
+</script>
+</body>
+</html>

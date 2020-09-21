@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>1</title>
+    <script type="text/javascript" src="three.js"></script>
+    <script type="text/javascript" src="Lensflare.js"></script>
+    <!-- <script type="text/javascript" src="OrbitControls.js"></script> -->
+    <script type="text/javascript" src="FirstPersonControls.js"></script>
+    <style type="text/css">
+        *{margin:0;padding:0;}
+        canvas{display:block;}
+    </style>
+</head>
+<body>
+<div id="fwhf"></div>
+<script type="text/javascript">
+    var renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setSize(window.innerWidth,window.innerHeight);
+    renderer.setClearColor('#333',.5);
+    document.getElementById("fwhf").append(renderer.domElement);
+
+    //创建一个场景
+    var scene=new THREE.Scene();
+
+    //生成一个坐标轴，辅助线，坐标轴的参数    rgb色对应xyz坐标轴
+    var axes=new THREE.AxesHelper(20);
+    //将辅助线添加至场景中
+    scene.add(axes);
+
+	var light = new THREE.PointLight( '#f1b018', 1.5, 300 );
+	light.position.set(-200,100,200);
+	//引入纹理
+	var textureLoader = new THREE.TextureLoader();
+	var textureFlare0 = textureLoader.load( "lensflare0.png" );
+	//炫光镜头
+	var lensflare = new THREE.Lensflare();
+	lensflare.addElement( new THREE.LensflareElement( textureFlare0, 512, 0 ) );
+	lensflare.position.copy(light.position);
+	light.add( lensflare );
+	scene.add(light);
+
+	var light1 = new THREE.PointLight( '#f1b018', 1.5, 300 );
+	light1.position.set(200,100,200);
+	var lensflare1 = new THREE.Lensflare();
+	lensflare1.addElement( new THREE.LensflareElement( textureFlare0, 512, 0 ) );
+	lensflare1.position.copy(light1.position);
+	light1.add( lensflare1 );
+	scene.add(light1);
+
+	var light2 = new THREE.PointLight( '#f1b018', 1.5, 300 );
+	light2.position.set(0,0,-200);
+	var lensflare2 = new THREE.Lensflare();
+	lensflare2.addElement( new THREE.LensflareElement( textureFlare0, 512, 0 ) );
+	lensflare2.position.copy(light2.position);
+	light2.add( lensflare2 );
+	scene.add(light2);
+
+	var light3 = new THREE.PointLight( '#f1b018', 1.5, 100 );
+	light3.position.set(0,0,0);
+	var lensflare3 = new THREE.Lensflare();
+	lensflare3.addElement( new THREE.LensflareElement( textureFlare0, 512, 0 ) );
+	lensflare3.position.copy(light3.position);
+	light3.add( lensflare3 );
+	scene.add(light3);
+
+    for(var i = 0 ; i < 800 ; i++){
+        var length = rand(4,9);
+        var cube = new THREE.Mesh(
+            new THREE.CubeGeometry(length,length,length),
+            new THREE.MeshLambertMaterial({color:0xffffff})
+            )
+        cube.position.x=rand(-200,200);
+        cube.position.y=rand(-200,200);
+        cube.position.z=rand(-200,200);
+        var deg = rand(0,9);
+        cube.rotation.x += deg;
+        cube.rotation.y += deg;
+        cube.rotation.z += deg;
+        scene.add(cube);
+    }
+    
+    //创建一个相机    PerspectiveCamera透视相机   参数：视角，纵横比，进平面的距离，远平面的距离
+    var camera=new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight,0.1,3000);
+    //设置相机的位置
+    camera.position.x=20;
+    camera.position.y=20;
+    camera.position.z=200;
+
+    var controls = new THREE.FirstPersonControls(camera);
+    // var controls = new THREE.OrbitControls(camera);//创建控件对象 camera是你的相机对象
+    // controls.addEventListener('change', renderer);
+	// controls.addEventListener('mousemove', renderer);//监听鼠标、键盘事件
+    controls.lookSpeed = 0.0125;
+    controls.movementSpeed = 500;
+    controls.noFly = false;
+    controls.lookVertical = true;
+
+    // controls.lookAt( scene.position );
+
+	camera.lookAt(scene.position);
+    renderer.render( scene, camera );
+    controls.update();
+
+	function animate() {
+	    requestAnimationFrame( animate );
+	    controls.update();
+	    renderer.render( scene, camera );
+	}
+	animate();
+
+    function rand(n,m){
+        var c = m - n + 1;
+        return Math.floor(Math.random() * c + n);
+    }
+</script>
+</body>
+</html>

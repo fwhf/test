@@ -1,0 +1,143 @@
+<head>
+    <title>1</title>
+    <script type="text/javascript" src="three.js"></script>
+    <style type="text/css">
+    	*{margin:0;padding:0;}
+    	canvas{display:block;}
+    </style>
+</head>
+<body>
+<div id="fwhf"></div>
+<script type="text/javascript">
+	init();
+	function init(){
+		//创建一个渲染器		即创建一个canvas		antialias: true圆滑效果
+		var renderer = new THREE.WebGLRenderer({antialias: true});
+		//渲染器宽高		即canvas宽高
+		renderer.setSize(window.innerWidth,window.innerHeight);
+		//渲染器颜色		即canvas的底色	参数： 颜色 (rgb也行),	透明度
+		renderer.setClearColor('#fff',.5);
+		//将渲染器添加到fwhf标签中	即将canvas添加至div中
+		document.getElementById("fwhf").append(renderer.domElement);
+
+        //创建一个场景
+        var scene=new THREE.Scene();
+
+        //生成一个坐标轴，辅助线，坐标轴的参数
+        var axes=new THREE.AxesHelper(30);
+        //将辅助线添加至场景中
+        scene.add(axes);
+
+        //创建光源	参数：颜色，密度，距离 0无穷
+        var light = new THREE.SpotLight(0xffffff,1,0);
+        //设置光源的位置
+        light.position.set(-40,60,-10);
+        //将光源添加至场景中
+        scene.add(light);
+
+        //创建一个几何体
+        //var geometry;
+        palne1(120,20,60,10,scene);
+
+        //var meterial = new THREE.MeshBasicMaterial({color:0x99ff});
+       // var mesh = THREE.SceneUtils.createMultiMaterialObject(geometry,meterial);
+       // mesh.children.forEach(function(e){
+       //     e.position = new THREE.Vector3(0,0,0);
+        //});
+        //将线添加至场景
+        //scene.add(mesh);
+        // //create a triangular geometry
+        // var geometry = new THREE.Geometry();
+        // geometry.vertices.push( new THREE.Vector3( -50, -50, 0 ) );
+        // geometry.vertices.push( new THREE.Vector3(  50, -50, 0 ) );
+        // geometry.vertices.push( new THREE.Vector3(  50,  50, 0 ) );
+
+        // geometry.vertices.push( new THREE.Vector3( 50, 50, 0 ) );
+        // geometry.vertices.push( new THREE.Vector3(  -50, 50, 0 ) );
+        // geometry.vertices.push( new THREE.Vector3(  -50,  -50, 0 ) );
+
+        // //create a new face using vertices 0, 1, 2
+        // var normal = new THREE.Vector3( 0, 1, 0 ); //optional
+        // var color = new THREE.Color( 0xffaa00 ); //optional
+        // var materialIndex = 0; //optional
+        // var face = new THREE.Face3( 0, 1, 2, normal, color, materialIndex );
+        // geometry.faces.push( face );
+        // var face = new THREE.Face3( 3, 4, 5, normal, color, materialIndex );
+        // geometry.faces.push( face );
+
+        //add the face to the geometry's faces array
+
+        //the face normals and vertex normals can be calculated automatically if not supplied above
+        // geometry.computeFaceNormals();
+        // geometry.computeVertexNormals();
+
+        // scene.add( new THREE.Mesh( geometry, material ) );
+
+		//创建一个相机	PerspectiveCamera透视相机	参数：视角，纵横比，进平面的距离，远平面的距离
+		var camera=new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight,0.1,1000);
+		//设置相机的位置
+		camera.position.x=200;
+        camera.position.y=140;
+        camera.position.z=130;
+        //
+        camera.up.x=1;
+        camera.up.y=0;
+        camera.up.z=0;
+        //指定摄像机的焦点
+        camera.lookAt(scene.position);
+
+        renderer.render(scene,camera);
+	}
+
+    function palne1(width,height,shareWidth,shareHeight,scene){
+        var geometry = new THREE.Geometry();
+        //法向量
+        var normal = new THREE.Vector3( 0, 1, 1 ); //optional
+        var color = new THREE.Color( 0xffaa00 ); //optional
+        var materialIndex = 0; //optional
+        //计算构成平面的定点
+        var ix,iy;
+        //计算中心点
+        var width_half = width/2;
+        var height_half = height/2;
+        //获取份数
+        var girdX = shareWidth || 1;
+        var girdY = shareHeight || 1;
+        //计算一份的宽高
+        var share_Width = width/girdX;
+        var share_Height = height/girdY;
+
+        for(ix = 0 ; ix <= girdX ; ix++){
+            for(iy = 0 ; iy <= girdY ; iy++){
+                var x = -share_Width + ix * share_Width;
+                var y = share_Height - iy * share_Height;
+                geometry.vertices.push(new THREE.Vector3(x,y,0));
+            }
+        }
+        // console.log(geometry.vertices)
+        //将顶点的顺序传递进去
+        // for(ix = 0 ; ix < girdX ; ix++){
+        //     for(iy = 0 ; iy < girdY ; iy++){
+        //         var a = iy + (girdY+1)*ix;
+        //         var b = iy + (girdY+1)*(ix+1);
+        //         var c = (iy+1)+(girdY+1)*(ix+1);
+        //         var d = (iy+1)+(girdY+1)*ix;
+        //         var face = new THREE.Face3(b,c,d,normal, color, materialIndex);
+        //         geometry.faces.push(face);
+
+        //         var face = new THREE.Face3(b,d,a,normal, color, materialIndex);
+        //         geometry.faces.push(face);
+        //     }
+        // }
+        var face = new THREE.Face3(20,140,210,normal, color, materialIndex);
+                geometry.faces.push(face);
+        var material = new THREE.MeshStandardMaterial( { color : 0x00cc00 } );
+
+        geometry.computeFaceNormals();
+        geometry.computeVertexNormals();
+
+        scene.add( new THREE.Mesh( geometry, material ) );
+    }
+</script>
+</body>
+</html>

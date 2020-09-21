@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>1</title>
+    <script type="text/javascript" src="three.js"></script>
+    <style type="text/css">
+        *{margin:0;padding:0;}
+        canvas{display:block;}
+    </style>
+</head>
+<body>
+<div id="fwhf"></div>
+<script type="text/javascript">
+    //创建一个渲染器       即默认创建一个canvas     antialias: true圆滑效果
+    var renderer = new THREE.WebGLRenderer({antialias: true});
+    //渲染器宽高     即canvas宽高
+    renderer.setSize(window.innerWidth,window.innerHeight);
+    //渲染器颜色     即canvas的底色  参数： 颜色 (rgb也行), 透明度
+    renderer.setClearColor('#333',.5);
+    //将渲染器添加到fwhf标签中    即将canvas添加至div中
+    document.getElementById("fwhf").append(renderer.domElement);
+
+    //创建一个场景
+    var scene=new THREE.Scene();
+
+    //生成一个坐标轴，辅助线，坐标轴的参数    rgb色对应xyz坐标轴
+    var axes=new THREE.AxisHelper(20);
+    //将辅助线添加至场景中
+    scene.add(axes);
+
+    //创建光源  参数：颜色，密度，距离 0无穷
+    var light = new THREE.SpotLight(0xffffff,1,0);
+    //设置光源的位置
+    light.position.set(-100,60,100);
+    //将光源添加至场景中
+    scene.add(light);
+
+    //创建多个物体    正方体+材质
+    for(var i = 0 ; i < 20 ; i++){
+        var length = rand(4,9);
+        var cube = new THREE.Mesh(
+            new THREE.CubeGeometry(length,length,length),
+            new THREE.MeshLambertMaterial({color:0xff0000})
+            )
+        //设置物体的位置
+        cube.position.x=rand(-100,100);
+        cube.position.y=rand(-50,50);
+        cube.position.z=rand(-50,0);
+        cube.rotation.x += 0.01;
+        cube.rotation.y += 0.01;
+        //将物体添加至场景
+        scene.add(cube);
+    }
+    
+    //创建一个相机    PerspectiveCamera透视相机   参数：视角，纵横比，进平面的距离，远平面的距离
+    var camera=new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight,0.1,1000);
+    //设置相机的位置
+    camera.position.x=20;
+    camera.position.y=20;
+    camera.position.z=100;
+    //指定摄像机的焦点
+    camera.lookAt(scene.position);
+
+    //渲染
+    renderer.render(scene,camera);
+
+    function rand(n,m){
+        var c = m - n + 1;
+        return Math.floor(Math.random() * c + n);
+    }
+</script>
+</body>
+</html>

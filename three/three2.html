@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>1</title>
+    <script type="text/javascript" src="three.js"></script>
+    <script type="text/javascript" src="OrbitControls.js"></script>
+    <style type="text/css">
+        *{margin:0;padding:0;}
+        canvas{display:block;}
+    </style>
+</head>
+<body>
+	<div id="fwhf"></div>
+	<script type="text/javascript">
+		window.onload = function(){
+			class FwhfYZH{
+				constructor(){
+					this.speedStart = 0;
+					this.speedMove = 0
+					this.i = 0;
+					this.init();	
+				}
+				init(){
+					// 创建一个渲染器
+					this.renderer = new THREE.WebGLRenderer({antialias: true});
+					this.renderer.setSize(window.innerWidth,window.innerHeight);
+					this.renderer.setClearColor('#222',1);
+					this.renderer.shadowMap.enabled  = true;
+					document.getElementById("fwhf").append(this.renderer.domElement);
+
+					//创建一个场景
+        			this.scene=new THREE.Scene();
+
+        			//创建一个相机
+					this.camera=new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight,0.1,1000);
+					this.camera.position.x=0;
+			        this.camera.position.y=80;
+			        this.camera.position.z=120;
+
+			        this.help();
+			        this.light();
+			        this.cylinder();
+			        this.character();
+			        this.start();
+
+					window.onkeydown = (e)=>{
+						var e = e || event;
+						if(e.keyCode == 32){
+							if(this.cylind[this.i]['scaleIndex'] > 0.5){
+								this.cylind[this.i]['scaleIndex'] -= 0.02;
+								this.cylind[this.i].position.y -= 14*0.01;
+								this.cylind[this.i].scale.set(1,this.cylind[this.i]['scaleIndex'],1);
+
+								this.cube.position.y -= 14*0.02;
+							}
+						}
+					}
+					window.onkeyup = (e)=>{
+						var e = e || event;
+						if(e.keyCode == 32){
+							this.speedStart = (1-this.cylind[this.i]['scaleIndex'])*10;
+							this.speedMove = (1-this.cylind[this.i]['scaleIndex'])*10;
+
+							this.cylind[this.i]['scaleIndex'] = 1;
+							this.cylind[this.i].position.y = 7;
+							this.cylind[this.i].scale.set(1,this.cylind[this.i]['scaleIndex'],1);
+
+							this.cube.position.y = 17;
+						}
+					}
+				}
+				help(){
+					//三维辅助线
+				    var axes=new THREE.AxesHelper(40);
+				    this.scene.add(axes);
+				}
+				light(){
+				    // 创建光源
+			        var light = new THREE.SpotLight(0xffffff,1,0);
+			        light.position.set(40,60,100);
+			        light.castShadow = true;
+			        this.scene.add(light);
+				}
+				cylinder(){
+					this.cylind = [];
+					for(var i = 0 ; i < 50 ; i++){
+						var texture = new THREE.TextureLoader().load( "tyt512.png" );
+						var geometry = new THREE.CylinderGeometry( 14, 14, 14, 32 );
+						var material = new THREE.MeshLambertMaterial( {map:texture,transparent:true,side:THREE.DoubleSide} );
+						this.cylind[i] = new THREE.Mesh( geometry, material );
+						this.cylind[i].position.y += 7;
+						this.cylind[i].position.x -= 40*i;
+						this.cylind[i]['scaleIndex'] = 1;
+						this.cylind[i].receiveShadow = true;
+						this.scene.add( this.cylind[i] );
+					}
+				}
+				character(){
+					var geometry = new THREE.BoxGeometry( 6, 6, 6 );
+					var material = new THREE.MeshLambertMaterial();
+					this.cube = new THREE.Mesh( geometry, material );
+					this.cube.position.y = 17;
+					this.cube.castShadow = true; 
+					this.scene.add( this.cube );
+					// this.camera.lookAt(this.cube.position);
+				}
+				characterAnimation(){
+					if(this.speedStart != 0){
+						this.cube.position.y += this.speedMove;
+						this.cube.position.x -= (this.speedMove+this.speedStart)/2;
+						this.camera.position.x -= (this.speedMove+this.speedStart)/2;
+						// this.camera.lookAt(this.cube.position);
+						// this.camera.position.z += (this.speedMove+this.speedStart)/4;
+						this.speedMove -= 0.1;
+						if(this.speedMove <= -this.speedStart){
+							this.speedMove = this.speedStart = 0;
+							this.cube.position.y = 17;
+							this.i++;
+							if(this.cube.position.x < this.i*(-40)-14 || this.cube.position.x > this.i*(-40)+14){
+								alert('Game over');
+								location.href = location.href;
+							}
+						}
+					}
+				}
+				start(){
+					this.controls = new THREE.OrbitControls(this.camera);
+					this.controls.addEventListener('mousemove', this.renderer);
+				    this.controls.update();
+					this.animate();
+				}
+				animate(){
+				    requestAnimationFrame( this.animate.bind(this) );
+				    // this.controls.update();
+				    this.characterAnimation();
+				    this.renderer.render( this.scene, this.camera );
+				}
+				rand(n,m){
+					var c = m - n + 1;
+					return Math.floor(Math.random() * c + n);
+				}
+			}
+			new FwhfYZH();
+		}
+	</script>
+</body>
+</html>
